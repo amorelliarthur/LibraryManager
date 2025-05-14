@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibraryManager_Console
 {
-    internal class Reader
+    public class Reader
     {
+        [Key]
+        public int idReader { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
-        public List<Book> Books { get; set; } = new();
+        public virtual ICollection<Book> Books { get; set; } = new List<Book>();
+
+        public Reader() { }
 
         public Reader(string name, string email)
         {

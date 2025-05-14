@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibraryManager_Console
 {
-    internal class Book
+    public class Book
     {
+        [Key]
+        public int idBook { get; set; }
+
         public string Title { get; set; }
         public string Author { get; set; }
-        public Genre Genre { get; set; }
 
-        public List<Reader> Readers { get; set; } = new();
+        // Propriedade de navegação virtual
+        public virtual Genre Genre { get; set; }
+
+        public virtual ICollection<Reader> Readers { get; set; } = new List<Reader>();
+
+        public Book() { }
 
         public Book(string title, string author, Genre genre = null)
         {
@@ -40,4 +48,5 @@ namespace LibraryManager_Console
             }
         }
     }
+
 }
