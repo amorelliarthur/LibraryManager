@@ -45,8 +45,7 @@ internal class Program
                     BookRegistration();
                     break;
                 case 2:
-                    BookGet();
-                    
+                    BookGet();                    
                     break;
                 case 3:
                     BookUpdate();
@@ -124,20 +123,23 @@ internal class Program
     private static void BookGet()
     {
         Console.Clear();
-        Console.WriteLine("Lista de livros:");
+        Console.WriteLine("Lista de Livros:");
 
-        var livros = BookDAL.ReadAll();
-
-        if (livros.Count == 0)
+        using (var context = new LibraryManagerContext())
         {
-            Console.WriteLine("Nenhum livro encontrado.");
-            return;
-        }
+            var books = context.Books.ToList();
 
-        foreach (var livro in livros)
-        {
-            string genreName = livro.Genre != null ? livro.Genre.Name : "Gênero não informado";
-            Console.WriteLine($"Título: {livro.Title} | Autor: {livro.Author} | Gênero: {genreName}");
+            if (books.Count == 0)
+            {
+                Console.WriteLine("Nenhum book encontrado.");
+                return;
+            }
+
+            foreach (var book in books)
+            {
+                string genreName = book.Genre != null ? book.Genre.Name : "Gênero não informado";
+                Console.WriteLine($"Título: {book.Title} | Autor: {book.Author} | Gênero: {genreName}");
+            }
         }
     }
     private static void BookUpdate()
@@ -256,20 +258,20 @@ internal class Program
         Console.Write("Digite o nome do gênero: ");
         string genreName = Console.ReadLine();
 
-        var livrosDoGenero = BookDAL.ReadAll()
+        var booksOfGener = BookDAL.ReadAll()
             .Where(b => b.Genre != null && b.Genre.Name.Equals(genreName, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        if (livrosDoGenero.Count == 0)
+        if (booksOfGener.Count == 0)
         {
             Console.WriteLine($"Nenhum livro encontrado com o gênero \"{genreName}\".");
         }
         else
         {
             Console.WriteLine($"\nLivros do gênero \"{genreName}\":");
-            foreach (var livro in livrosDoGenero)
+            foreach (var book in booksOfGener)
             {
-                Console.WriteLine($"- {livro.Title} (Autor: {livro.Author})");
+                Console.WriteLine($"- {book.Title} (Autor: {book.Author})");
             }
         }
     }
@@ -277,36 +279,6 @@ internal class Program
 
 
     
-
-
-    //private static void GenreRegistration()
-    //{
-    //    Console.Clear();
-    //    Console.WriteLine("Registro de gênero");
-    //    Console.Write("Digite o título do livro que receberá o gênero: ");
-    //    string title = Console.ReadLine();
-    //    if (BookList.ContainsKey(title))
-    //    {
-    //        Console.Write($"Informe o nome do gênero para o livro \"{title}\": ");
-    //        string name = Console.ReadLine();
-    //        Book b = BookList[title];
-    //        b.Genre = new Genre(name);
-    //        Console.WriteLine($"O gênero \"{name}\" foi atribuído ao livro \"{title}\" com sucesso!");
-    //    }
-    //    else
-    //    {
-    //        Console.WriteLine($"O livro \"{title}\" não está registrado.");
-    //    }
-    //}
-
-
-    
-
-    
-
-
-
-
     private static void ReaderRegistration()
     {
         Console.Clear();
