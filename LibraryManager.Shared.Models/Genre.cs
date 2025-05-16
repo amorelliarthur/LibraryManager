@@ -9,7 +9,6 @@ namespace LibraryManager_Console
         [Key]
         public int idGenre { get; set; }
         public string Name { get; set; }
-
         public virtual ICollection<Book> Books { get; set; } = new List<Book>();
 
         public Genre() { }

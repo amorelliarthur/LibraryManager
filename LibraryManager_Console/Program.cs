@@ -100,17 +100,14 @@ internal class Program
             var genre = context.Genres
                 .FirstOrDefault(g => g.Name.ToLower() == genreName.ToLower());
 
-            // Se não existir, cria e salva
             if (genre == null)
             {
                 genre = new Genre { Name = genreName };
                 context.Genres.Add(genre);
-                //context.Update(genre); PAra utilizar Proxy
-                context.SaveChanges(); // Salva para gerar o ID
+                context.SaveChanges();
                 Console.WriteLine($"Novo gênero \"{genreName}\" criado.");
             }
 
-            // Agora o gênero tem ID garantido
             Book book = new(title, author);
             book.Genre = genre;
 
@@ -205,7 +202,7 @@ internal class Program
         using (var context = new LibraryManagerContext())
         {
             var book = context.Books
-                .Include(b => b.Genre) // opcional, apenas se quiser ver o gênero no log
+                .Include(b => b.Genre)
                 .FirstOrDefault(b => b.Title.ToLower() == title.ToLower());
 
             if (book == null)

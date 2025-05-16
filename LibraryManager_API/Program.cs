@@ -1,6 +1,6 @@
 using LibraryManager.Data.BD;
 using LibraryManager_Console;
-using System.Text.Json.Serialization; // necessário para ReferenceHandler
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 

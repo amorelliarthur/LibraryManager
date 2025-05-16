@@ -11,10 +11,7 @@ namespace LibraryManager_Console
 
         public string Title { get; set; }
         public string Author { get; set; }
-
-        // Propriedade de navegação virtual
         public virtual Genre Genre { get; set; }
-
         public virtual ICollection<Reader> Readers { get; set; } = new List<Reader>();
 
         public Book() { }
