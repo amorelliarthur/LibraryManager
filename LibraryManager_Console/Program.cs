@@ -5,12 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 internal class Program
 {
-    public static Dictionary<string, Book> BookList = new();
-    public static Dictionary<string, Reader> ReaderList = new(); // chave: email
-
     public static DAL<Book> BookDAL = new();
     public static DAL<Genre> GenreDAL = new();
-
+    public static DAL<Reader> ReaderDAL = new();
 
     private static void Main(string[] args)
     {
@@ -117,6 +114,7 @@ internal class Program
 
         Console.WriteLine($"Livro \"{title}\" registrado com sucesso com o gênero \"{genreName}\"!");
     }
+
     private static void BookGet()
     {
         Console.Clear();
@@ -139,6 +137,7 @@ internal class Program
             }
         }
     }
+
     private static void BookUpdate()
     {
         Console.Clear();
@@ -192,6 +191,7 @@ internal class Program
             Console.WriteLine("Livro atualizado com sucesso!");
         }
     }
+
     private static void BookDelete()
     {
         Console.Clear();
@@ -248,6 +248,7 @@ internal class Program
             Console.WriteLine($"Gênero \"{genreName}\" registrado com sucesso!");
         }
     }
+
     private static void GenreGet()
     {
         Console.Clear();
@@ -273,9 +274,6 @@ internal class Program
         }
     }
 
-
-
-    
     private static void ReaderRegistration()
     {
         Console.Clear();
@@ -285,42 +283,63 @@ internal class Program
         Console.Write("Digite o email do leitor: ");
         string email = Console.ReadLine();
 
-        if (ReaderList.ContainsKey(email))
+        using var context = new LibraryManagerContext();
+        // já existe?
+        if (context.Readers.Any(r => r.Email.ToLower() == email.ToLower()))
         {
             Console.WriteLine("Já existe um leitor com este email.");
             return;
         }
 
-        Reader r = new(name, email);
-        ReaderList.Add(email, r);
-        Console.WriteLine($"Leitor \"{name}\" registrado com sucesso!");
+        var reader = new Reader(name, email);
+        context.Readers.Add(reader);
+        context.SaveChanges();
+
+        Console.WriteLine($"Leitor \"{name}\" registrado com sucesso! (id={reader.idReader})");
     }
 
     private static void AssociateBookToReader()
     {
         Console.Clear();
         Console.WriteLine("Associar livro a leitor");
+
         Console.Write("Digite o título do livro: ");
         string title = Console.ReadLine();
+
         Console.Write("Digite o email do leitor: ");
         string email = Console.ReadLine();
 
-        if (!BookList.ContainsKey(title))
+        using var context = new LibraryManagerContext();
+        var book = context.Books
+                          .Include(b => b.Readers)
+                          .FirstOrDefault(b => b.Title.ToLower() == title.ToLower());
+
+        var reader = context.Readers
+                            .Include(r => r.Books)
+                            .FirstOrDefault(r => r.Email.ToLower() == email.ToLower());
+
+        if (book == null)
         {
             Console.WriteLine("Livro não encontrado.");
             return;
         }
 
-        if (!ReaderList.ContainsKey(email))
+        if (reader == null)
         {
             Console.WriteLine("Leitor não encontrado.");
             return;
         }
 
-        Book b = BookList[title];
-        Reader r = ReaderList[email];
-        r.AddBook(b); // isso atualiza os dois lados
-        Console.WriteLine($"Leitor \"{r.Name}\" associado ao livro \"{b.Title}\" com sucesso!");
+        if (book.Readers.Any(r => r.idReader == reader.idReader))
+        {
+            Console.WriteLine("Este leitor já está associado ao livro.");
+        }
+        else
+        {
+            book.Readers.Add(reader);
+            context.SaveChanges();
+            Console.WriteLine($"Livro \"{book.Title}\" associado ao leitor \"{reader.Name}\".");
+        }
     }
 
     private static void ShowReadersOfBook()
@@ -329,13 +348,27 @@ internal class Program
         Console.Write("Digite o título do livro: ");
         string title = Console.ReadLine();
 
-        if (!BookList.ContainsKey(title))
+        using var context = new LibraryManagerContext();
+        var book = context.Books
+                            .Include(b => b.Readers)
+                            .FirstOrDefault(b => b.Title.ToLower() == title.ToLower());
+
+        if (book == null)
         {
             Console.WriteLine("Livro não encontrado.");
             return;
         }
 
-        BookList[title].ShowReaders();
+        Console.WriteLine($"\nLeitores do livro \"{book.Title}\":");
+        if (book.Readers.Any())
+        {
+            foreach (var r in book.Readers)
+                Console.WriteLine($"- {r.Name} ({r.Email})");
+        }
+        else
+        {
+            Console.WriteLine("Nenhum leitor associado.");
+        }
     }
 
     private static void ShowBooksOfReader()
@@ -344,13 +377,28 @@ internal class Program
         Console.Write("Digite o email do leitor: ");
         string email = Console.ReadLine();
 
-        if (!ReaderList.ContainsKey(email))
+        using var context = new LibraryManagerContext();
+        var reader = context.Readers
+                            .Include(r => r.Books)
+                            .ThenInclude(b => b.Genre)
+                            .FirstOrDefault(r => r.Email.ToLower() == email.ToLower());
+
+        if (reader == null)
         {
             Console.WriteLine("Leitor não encontrado.");
             return;
         }
 
-        ReaderList[email].ShowBooks();
+        Console.WriteLine($"\nLivros do leitor \"{reader.Name}\":");
+        if (reader.Books.Any())
+        {
+            foreach (var b in reader.Books)
+                Console.WriteLine($"- {b.Title} (Autor: {b.Author}, Gênero: {b.Genre?.Name ?? "—"})");
+        }
+        else
+        {
+            Console.WriteLine("Nenhum livro associado.");
+        }
     }
 
 }

@@ -20,9 +20,16 @@ namespace LibraryManager.Data.BD
         }
         public void Create(T value)
         {
+            if (value is Book b && b.Genre != null)
+            {
+                // Garante que o Genre não seja reinserido
+                context.Entry(b.Genre).State = EntityState.Unchanged;
+            }
+
             context.Set<T>().Add(value);
             context.SaveChanges();
         }
+
         public IEnumerable<T> Read()
         {
             return context.Set<T>().ToList();
