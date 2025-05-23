@@ -10,7 +10,10 @@ namespace LibraryManager_API.Endpoints
     {
         public static void AddEndPointsGenre(this WebApplication app)
         {
-            var group = app.MapGroup("/genres").WithTags("Genres");
+            var group = app
+                .MapGroup("/genres")
+                .RequireAuthorization()
+                .WithTags("Genres");
 
             // POST /genres - Cadastrar um Gênero
             group.MapPost("", ([FromServices] DAL<Genre> dal, [FromBody] GenreRequest genreReq) =>
@@ -73,7 +76,15 @@ namespace LibraryManager_API.Endpoints
                     return Results.NotFound();
 
                 var books = genre.Books?.Select(b =>
-                    new BookResponse(b.idBook, b.Title, b.Author, genre.idGenre, genre.Name)).ToList();
+                new BookResponse(
+                    b.idBook,
+                    b.Title,
+                    b.Author,
+                    genre.idGenre,
+                    genre.Name,
+                    b.Publisher?.idPublisher ?? 0,
+                    b.Publisher?.Name ?? "Sem editora"
+                )).ToList();
 
                 return Results.Ok(books ?? new List<BookResponse>());
             });

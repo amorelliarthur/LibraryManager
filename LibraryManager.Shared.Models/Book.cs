@@ -11,16 +11,20 @@ namespace LibraryManager_Console
 
         public string Title { get; set; }
         public string Author { get; set; }
+        public int? GenreId { get; set; }
         public virtual Genre Genre { get; set; }
         public virtual ICollection<Reader> Readers { get; set; } = new List<Reader>();
+        public int? PublisherId { get; set; }
+        public virtual Publisher Publisher { get; set; }
 
         public Book() { }
 
-        public Book(string title, string author, Genre genre = null)
+        public Book(string title, string author, Genre genre = null, Publisher publisher = null)
         {
             Title = title;
             Author = author;
             Genre = genre;
+            Publisher = publisher;
         }
 
         public void AddReader(Reader reader)

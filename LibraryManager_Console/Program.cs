@@ -30,6 +30,9 @@ internal class Program
             Console.WriteLine("Digite 9 para mostrar leitores de um livro");
             Console.WriteLine("Digite 10 para mostrar livros de um leitor\n");
 
+            Console.WriteLine("Digite 11 para registrar uma editora");
+            Console.WriteLine("Digite 12 para mostrar livros por editora\n");
+
             Console.WriteLine("Digite -1 para sair\n");
             Console.WriteLine("---------------------");
 
@@ -68,6 +71,12 @@ internal class Program
                 case 10:
                     ShowBooksOfReader();
                     break;
+                case 11:
+                    PublisherRegistration();
+                    break;
+                case 12:
+                    PublisherGetBooks();
+                    break;
                 case -1:
                     Console.WriteLine("Até mais!");
                     exit = true;
@@ -84,19 +93,23 @@ internal class Program
     {
         Console.Clear();
         Console.WriteLine("Registro de livro");
+
         Console.Write("Digite o título do livro: ");
         string title = Console.ReadLine();
+
         Console.Write("Digite o autor do livro: ");
         string author = Console.ReadLine();
+
         Console.Write("Digite o gênero do livro: ");
         string genreName = Console.ReadLine();
 
-        // Consulta usando o contexto para obter a instância real do gênero
+        Console.Write("Digite o nome da editora: ");
+        string publisherName = Console.ReadLine();
+
         using (var context = new LibraryManagerContext())
         {
-            var genre = context.Genres
-                .FirstOrDefault(g => g.Name.ToLower() == genreName.ToLower());
-
+            // Verifica se o gênero já existe
+            var genre = context.Genres.FirstOrDefault(g => g.Name.ToLower() == genreName.ToLower());
             if (genre == null)
             {
                 genre = new Genre { Name = genreName };
@@ -105,15 +118,25 @@ internal class Program
                 Console.WriteLine($"Novo gênero \"{genreName}\" criado.");
             }
 
-            Book book = new(title, author);
-            book.Genre = genre;
+            // Verifica se a editora já existe
+            var publisher = context.Publishers.FirstOrDefault(p => p.Name.ToLower() == publisherName.ToLower());
+            if (publisher == null)
+            {
+                publisher = new Publisher { Name = publisherName };
+                context.Publishers.Add(publisher);
+                context.SaveChanges();
+                Console.WriteLine($"Nova editora \"{publisherName}\" criada.");
+            }
 
+            // Cria o livro e associa
+            Book book = new(title, author, genre, publisher);
             context.Books.Add(book);
             context.SaveChanges();
         }
 
-        Console.WriteLine($"Livro \"{title}\" registrado com sucesso com o gênero \"{genreName}\"!");
+        Console.WriteLine($"Livro \"{title}\" registrado com sucesso com o gênero \"{genreName}\" e editora \"{publisherName}\"!");
     }
+
 
     private static void BookGet()
     {
@@ -133,7 +156,8 @@ internal class Program
             foreach (var book in books)
             {
                 string genreName = book.Genre != null ? book.Genre.Name : "Gênero não informado";
-                Console.WriteLine($"Título: {book.Title} | Autor: {book.Author} | Gênero: {genreName}");
+                string publisherName = book.Publisher != null ? book.Publisher.Name : "editora não informada";
+                Console.WriteLine($"Título: {book.Title} | Autor: {book.Author} | Gênero: {genreName} | Ediora: {publisherName}");
             }
         }
     }
@@ -400,5 +424,54 @@ internal class Program
             Console.WriteLine("Nenhum livro associado.");
         }
     }
+
+    private static void PublisherRegistration()
+    {
+        Console.Clear();
+        Console.WriteLine("Registro de editora");
+        Console.Write("Nome da editora: ");
+        var name = Console.ReadLine();
+        using var ctx = new LibraryManagerContext();
+        if (ctx.Publishers.Any(p => p.Name.ToLower() == name.ToLower()))
+        {
+            Console.WriteLine("Editora já existe.");
+            return;
+        }
+        var pub = new Publisher(name);
+        ctx.Publishers.Add(pub);
+        ctx.SaveChanges();
+        Console.WriteLine($"Editora \"{name}\" criada (ID={pub.idPublisher}).");
+    }
+
+    private static void PublisherGetBooks()
+    {
+        Console.Clear();
+        Console.WriteLine("Livros por editora");
+        Console.Write("Nome da editora: ");
+        var name = Console.ReadLine();
+        using var ctx = new LibraryManagerContext();
+        var pub = ctx.Publishers
+                     .Include(p => p.Books)
+                         .ThenInclude(b => b.Genre)
+                     .FirstOrDefault(p => p.Name.ToLower() == name.ToLower());
+
+        if (pub == null)
+        {
+            Console.WriteLine("Editora não encontrada.");
+            return;
+        }
+
+        Console.WriteLine($"Livros da editora \"{pub.Name}\":");
+        if (!pub.Books.Any())
+        {
+            Console.WriteLine("Nenhum livro associado.");
+        }
+        else
+        {
+            foreach (var b in pub.Books)
+                Console.WriteLine($"- {b.Title} (Autor: {b.Author}, Gênero: {b.Genre?.Name ?? "—"})");
+        }
+    }
+
 
 }

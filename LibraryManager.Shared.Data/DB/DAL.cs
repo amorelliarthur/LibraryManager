@@ -18,12 +18,20 @@ namespace LibraryManager.Data.BD
         {
             context = new LibraryManagerContext();
         }
+        
         public void Create(T value)
         {
-            if (value is Book b && b.Genre != null)
+            // Se for Book, garantir que Genre e Publisher não sejam reinseridos
+            if (value is Book b)
             {
-                // Garante que o Genre não seja reinserido
-                context.Entry(b.Genre).State = EntityState.Unchanged;
+                if (b.Genre != null)
+                {
+                    context.Entry(b.Genre).State = EntityState.Unchanged;
+                }
+                if (b.Publisher != null)
+                {
+                    context.Entry(b.Publisher).State = EntityState.Unchanged;
+                }
             }
 
             context.Set<T>().Add(value);
@@ -57,6 +65,7 @@ namespace LibraryManager.Data.BD
             {
                 return context.Set<Book>()
                     .Include(b => b.Genre)
+                    .Include(b => b.Publisher)
                     .Cast<T>()
                     .ToList();
             }

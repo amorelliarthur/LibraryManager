@@ -1,4 +1,5 @@
 ﻿using LibraryManager.Data.BD;
+using LibraryManager.Shared.Data.DB;
 using LibraryManager_API.Requests;
 using LibraryManager_API.Responses;
 using LibraryManager_Console;
@@ -10,7 +11,10 @@ namespace LibraryManager_API.Endpoints
     {
         public static void AddEndPointsReader(this WebApplication app)
         {
-            var group = app.MapGroup("/readers").WithTags("Readers");
+            var group = app
+                .MapGroup("/readers")
+                .RequireAuthorization()
+                .WithTags("Readers");
 
             // POST /readers - Cadastrar novo leitor
             group.MapPost("", ([FromServices] DAL<Reader> dal, [FromBody] ReaderRequest req) =>
@@ -68,10 +72,11 @@ namespace LibraryManager_API.Endpoints
             group.MapPost("/{readerId}/books/{bookId}", ([FromServices] DAL<Reader> readerDal, [FromServices] DAL<Book> bookDal, int readerId, int bookId) =>
             {
                 var reader = readerDal.ReadBy(r => r.idReader == readerId);
-                var book = bookDal.ReadBy(b => b.idBook == bookId);
+                if (reader == null) return Results.NotFound("Leitor não encontrado.");
 
-                if (reader == null || book == null)
-                    return Results.NotFound("Leitor ou livro não encontrado.");
+                using var context = new LibraryManagerContext();
+                var book = context.Books.Find(bookId);
+                if (book == null) return Results.NotFound("Livro não encontrado.");
 
                 if (!reader.Books.Contains(book))
                 {
@@ -89,7 +94,16 @@ namespace LibraryManager_API.Endpoints
                 if (reader == null) return Results.NotFound();
 
                 var list = reader.Books.Select(b =>
-                    new BookResponse(b.idBook, b.Title, b.Author, b.Genre.idGenre, b.Genre.Name)).ToList();
+                new BookResponse(
+                    b.idBook,
+                    b.Title,
+                    b.Author,
+                    b.Genre?.idGenre ?? 0,
+                    b.Genre?.Name ?? "Sem gênero",
+                    b.Publisher?.idPublisher ?? 0,
+                    b.Publisher?.Name ?? "Sem editora"
+                )).ToList();
+
 
                 return Results.Ok(list);
             });

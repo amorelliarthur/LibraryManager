@@ -4,6 +4,7 @@ using LibraryManager.Shared.Data.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryManager.Shared.Data.Migrations
 {
     [DbContext(typeof(LibraryManagerContext))]
-    partial class LibraryManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20250521223646_IdentityTables")]
+    partial class IdentityTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,10 +153,7 @@ namespace LibraryManager.Shared.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("GenreId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("PublisherId")
+                    b.Property<int>("GenreidGenre")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -162,9 +162,7 @@ namespace LibraryManager.Shared.Data.Migrations
 
                     b.HasKey("idBook");
 
-                    b.HasIndex("GenreId");
-
-                    b.HasIndex("PublisherId");
+                    b.HasIndex("GenreidGenre");
 
                     b.ToTable("Books");
                 });
@@ -184,23 +182,6 @@ namespace LibraryManager.Shared.Data.Migrations
                     b.HasKey("idGenre");
 
                     b.ToTable("Genres");
-                });
-
-            modelBuilder.Entity("LibraryManager_Console.Publisher", b =>
-                {
-                    b.Property<int>("idPublisher")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idPublisher"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("idPublisher");
-
-                    b.ToTable("Publishers");
                 });
 
             modelBuilder.Entity("LibraryManager_Console.Reader", b =>
@@ -346,17 +327,11 @@ namespace LibraryManager.Shared.Data.Migrations
                 {
                     b.HasOne("LibraryManager_Console.Genre", "Genre")
                         .WithMany("Books")
-                        .HasForeignKey("GenreId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("LibraryManager_Console.Publisher", "Publisher")
-                        .WithMany("Books")
-                        .HasForeignKey("PublisherId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("GenreidGenre")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Genre");
-
-                    b.Navigation("Publisher");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -411,11 +386,6 @@ namespace LibraryManager.Shared.Data.Migrations
                 });
 
             modelBuilder.Entity("LibraryManager_Console.Genre", b =>
-                {
-                    b.Navigation("Books");
-                });
-
-            modelBuilder.Entity("LibraryManager_Console.Publisher", b =>
                 {
                     b.Navigation("Books");
                 });
