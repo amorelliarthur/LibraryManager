@@ -13,9 +13,9 @@ A solução é composta por quatro projetos:
 
 ## Diagrama de Classes
 
-Abaixo está o diagrama de classes que representa as principais entidades e relacionamentos do projeto:
+O diagrama de classes que representa as principais entidades e relacionamentos do projeto está localizado na raiz do projeto.
 
-![Diagrama de Classes](doc/Diagram_Class_LibraryManager.png)
+Diagram_Class_LibraryManager.png
 
 ## Requisitos
 
