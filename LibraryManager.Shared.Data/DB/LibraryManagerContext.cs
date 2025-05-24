@@ -18,7 +18,10 @@ namespace LibraryManager.Shared.Data.DB
         public DbSet<Reader> Readers { get; set; }
         public DbSet<Publisher> Publishers { get; set; }
 
+        //Banco Local
         private string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=LibraryManager_DB;Integrated Security=True;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+        //Banco Azure
+        //private string connectionString = "Server=tcp:librarymanagerserver.database.windows.net,1433;Initial Catalog=LibraryManager_DB;Persist Security Info=False;User ID=libraryadm;Password=Library@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 
         protected override void 
         OnConfiguring(DbContextOptionsBuilder optionsBuilder)

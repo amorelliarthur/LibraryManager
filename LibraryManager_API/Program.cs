@@ -3,6 +3,7 @@ using LibraryManager.Shared.Data.DB;
 using LibraryManager.Shared.Data.Models;
 using LibraryManager_API.Endpoints;
 using LibraryManager_Console;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
@@ -24,6 +25,23 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Configuração de tratamento de erros
+if (app.Environment.IsDevelopment())
+    app.UseDeveloperExceptionPage();
+else
+{
+    app.UseExceptionHandler("/error");
+
+    // Mapeia o endpoint de erro
+    app.Map("/error", (HttpContext ctx) =>
+    {
+        var feature = ctx.Features.Get<IExceptionHandlerFeature>();
+        var ex = feature?.Error;
+        return Results.Problem(detail: ex?.Message, statusCode: 500);
+    });
+}
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGroup("auth").MapIdentityApi<AccessUser>().WithTags("Authorization");
@@ -40,6 +58,9 @@ app.AddEndPointsBook();
 app.AddEndPointsGenre();
 app.AddEndPointsReader();
 app.AddEndPointsPublisher();
+
+//Para vizualizar Swagger após publicar em Azure.
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseSwagger();
 app.UseSwaggerUI();

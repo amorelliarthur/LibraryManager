@@ -30,7 +30,7 @@ namespace LibraryManager_API.Endpoints
                     b.Publisher?.Name ?? "Sem editora"
                 ));
                 return Results.Ok(response);
-            });
+            }).AllowAnonymous(); // Dessa forma o get Book nao precisa estar autenticado.
 
             // GET /books/{id} - Buscar um Livro específico
             group.MapGet("/{id}", (int id, [FromServices] DAL<Book> dal) =>
